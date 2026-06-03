@@ -2,8 +2,6 @@
 
 My learning repository for the **Generative AI Summer of Code 2026**.
 
----
-# Week 1 - Prompt Engineering Playground
 
 A simple GenAI chatbot built using Python and Groq.
 
@@ -180,15 +178,9 @@ python gradio_chatbot.py
 
 # 📸 Demo
 
-Add screenshots of your chatbot here.
+![alt text](image.png)
+![alt text](image-1.png)
 
-Example:
-
-```md
-![Gradio Chatbot](images/chatbot-demo.png)
-```
-
----
 
 # 🌱 Progress
 
