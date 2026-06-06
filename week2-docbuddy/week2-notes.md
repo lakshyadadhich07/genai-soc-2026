@@ -17,6 +17,13 @@ Used for semantic search in RAG.
 ## What is a Vector Store?
 
 ## What is ChromaDB?
+It stores:
+
+Vector
++
+Original Text
++
+Metadata
 
 ## What is Chunking?
 
@@ -36,3 +43,21 @@ Chroma
 	 Store vectors
 Retriever	           
      Find relevant chunks
+
+
+## Note:-
+PDF
+↓
+Chunks
+↓
+Embeddings
+↓
+ChromaDB
+↓
+Retriever
+↓
+Relevant Chunks
+↓
+LLM
+↓
+Answer
