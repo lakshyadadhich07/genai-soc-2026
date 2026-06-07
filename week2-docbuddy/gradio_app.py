@@ -1,27 +1,17 @@
 import gradio as gr
 
-# PDF Loading
 from langchain_community.document_loaders import PyPDFLoader
-
-# Chunking
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
-# Embeddings
 from langchain_community.embeddings import HuggingFaceEmbeddings
-
-# Vector DB
 from langchain_community.vectorstores import Chroma
 
-# Groq
 from groq import Groq
-
-# Environment Variables
 from dotenv import load_dotenv
+
 import os
 
-
 # =====================================
-# Load Environment Variables
+# Load API Key
 # =====================================
 
 load_dotenv()
@@ -29,7 +19,6 @@ load_dotenv()
 client = Groq(
     api_key=os.getenv("GROQ_API_KEY")
 )
-
 
 # =====================================
 # Embedding Model
@@ -41,13 +30,12 @@ embeddings = HuggingFaceEmbeddings(
 
 vectorstore = None
 
-
 # =====================================
-# INDEX DOCUMENTS
-# PDF -> Chunks -> Embeddings -> ChromaDB
+# PDF -> Chunks -> ChromaDB
 # =====================================
 
 def index_documents(pdf_paths):
+   
 
     global vectorstore
 
@@ -73,23 +61,47 @@ def index_documents(pdf_paths):
 
         all_chunks.extend(chunks)
 
+    import shutil
+
+    if os.path.exists("./chroma_store"):
+        shutil.rmtree("./chroma_store")
+    
     vectorstore = Chroma.from_documents(
         documents=all_chunks,
         embedding=embeddings,
         persist_directory="./chroma_store"
     )
 
-    print("\nStored", len(all_chunks), "chunks in ChromaDB")
+    print(f"\nStored {len(all_chunks)} chunks in ChromaDB")
+
+    return f"Successfully indexed {len(all_chunks)} chunks."
 
 
 # =====================================
-# ASK QUESTION
-# Retriever -> Context -> Groq
+# Upload PDF
+# =====================================
+
+def upload_pdf(pdf_file):
+
+    if pdf_file is None:
+        return "Please upload a PDF."
+
+    return index_documents([pdf_file.name])
+
+
+# =====================================
+# Ask Question
 # =====================================
 
 def ask(question):
 
     global vectorstore
+
+    if vectorstore is None:
+        return (
+            "Please upload and process a PDF first.",
+            ""
+        )
 
     retriever = vectorstore.as_retriever(
         search_kwargs={"k": 5}
@@ -100,8 +112,7 @@ def ask(question):
     context = ""
 
     for doc in results:
-        context += doc.page_content
-        context += "\n\n"
+        context += doc.page_content + "\n\n"
 
     prompt = f"""
 You are a helpful assistant.
@@ -131,13 +142,20 @@ Question:
 
     answer = response.choices[0].message.content
 
-    sources = ""
     seen = set()
+    sources = ""
 
     for doc in results:
 
-        source = doc.metadata.get("source", "Unknown")
-        page = doc.metadata.get("page", 0) + 1
+        source = doc.metadata.get(
+            "source",
+            "Unknown"
+        )
+
+        page = doc.metadata.get(
+            "page",
+            0
+        ) + 1
 
         key = (source, page)
 
@@ -154,41 +172,62 @@ Question:
 
 
 # =====================================
-# Gradio Function
-# =====================================
-
-def answer_question(question):
-
-    answer, sources = ask(question)
-
-    return answer, sources
-
-
-# =====================================
-# Load PDF Once At Startup
-# =====================================
-
-index_documents([
-    "ICT Mid sem notes.pdf"
-])
-
-
-# =====================================
 # Gradio UI
 # =====================================
 
-demo = gr.Interface(
-    fn=answer_question,
-    inputs=gr.Textbox(
-        label="Ask a Question",
+with gr.Blocks() as demo:
+
+    gr.Markdown("# 📄 DocBuddy")
+
+    gr.Markdown(
+        "Upload a PDF and ask questions about it."
+    )
+
+    pdf_file = gr.File(
+        label="Upload PDF",
+        file_types=[".pdf"]
+    )
+
+    upload_btn = gr.Button(
+        "Process PDF"
+    )
+
+    upload_status = gr.Textbox(
+        label="Status"
+    )
+
+    upload_btn.click(
+        fn=upload_pdf,
+        inputs=pdf_file,
+        outputs=upload_status
+    )
+
+    question = gr.Textbox(
+        label="Question",
         placeholder="What is Digital Twin?"
-    ),
-    outputs=[
-        gr.Textbox(label="Answer"),
-        gr.Textbox(label="Sources")
-    ],
-    title="DocBuddy",
-    description="Ask questions about your PDF documents."
-)
+    )
+
+    ask_btn = gr.Button(
+        "Ask"
+    )
+
+    answer_box = gr.Textbox(
+        label="Answer",
+        lines=6
+    )
+
+    sources_box = gr.Textbox(
+        label="Sources",
+        lines=4
+    )
+
+    ask_btn.click(
+        fn=ask,
+        inputs=question,
+        outputs=[
+            answer_box,
+            sources_box
+        ]
+    )
 
 demo.launch()
