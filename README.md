@@ -183,7 +183,9 @@ python gradio_chatbot.py
 
 
 # 🌱 Progress
+In week 2, Learnt about RAG and how LLMs use vector representation and how to reduce hallucinations. Created my Docbuddy AI agengt which allows pdf files to use and answer Questions.
 
 ✅ Week 1 Completed
 
-🔜 Week 2: Retrieval-Augmented Generation (RAG)
+✅ Week 2: Retrieval-Augmented Generation (RAG)
+
