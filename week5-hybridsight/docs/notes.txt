@@ -1,0 +1,5 @@
+Python is a programming language.
+
+RAG means Retrieval Augmented Generation.
+
+Vector databases store embeddings.
