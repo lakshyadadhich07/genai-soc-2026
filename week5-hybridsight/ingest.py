@@ -1,14 +1,17 @@
 from langchain_text_splitters import CharacterTextSplitter
-from langchain_community.document_loaders import TextLoader
 from langchain_community.vectorstores import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.document_loaders import DirectoryLoader
+from langchain_community.document_loaders import TextLoader
 
-loader = TextLoader(
-    "docs/notes.txt",
-    encoding="utf-8"
+loader = DirectoryLoader(
+    "docs",
+    glob="*.txt",
+    loader_cls=TextLoader
 )
 
 docs = loader.load()
+
 
 splitter = CharacterTextSplitter(
     separator="\n",

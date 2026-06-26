@@ -1,0 +1,1 @@
+RAG retrieves information before generation.
