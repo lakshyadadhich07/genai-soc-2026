@@ -14,9 +14,13 @@ docs = loader.load()
 
 
 splitter = CharacterTextSplitter(
+
     separator="\n",
-    chunk_size=50,
-    chunk_overlap=0
+
+    chunk_size=500,
+
+    chunk_overlap=100
+
 )
 
 chunks = splitter.split_documents(docs)
@@ -33,7 +37,8 @@ embedding = HuggingFaceEmbeddings(
 db = Chroma.from_documents(
     chunks,
     embedding,
-    persist_directory="vector_db"
+    persist_directory="./chroma_store",
+    collection_name="lecture_notes"
 )
 
 print("\nRAG database created")

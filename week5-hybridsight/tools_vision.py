@@ -1,77 +1,51 @@
+from dotenv import load_dotenv
 import os
+import base64
 
-from dotenv import (
-    load_dotenv
-)
+from langchain_groq import ChatGroq
 
-from langchain_groq import (
-    ChatGroq
-)
-
-from langchain_core.tools import (
-    tool
-)
-
-from image_utils import (
-    encode_image
-)
 
 load_dotenv()
 
 
 vision = ChatGroq(
     model="meta-llama/llama-4-scout-17b-16e-instruct",
-    api_key=os.getenv("GROQ_API_KEY"),
-    temperature=0
+    api_key=os.getenv("GROQ_API_KEY")
 )
 
 
-@tool
-def describe_image(
-    image_path: str
-):
+def describe_image(image_path):
 
-    """
-    Describe uploaded image.
-    """
+    try:
 
-    image = encode_image(
-        image_path
-    )
+        with open(image_path, "rb") as f:
+            encoded = base64.b64encode(
+                f.read()
+            ).decode()
 
-    response = (
-
-        vision.invoke(
+        response = vision.invoke(
 
             [
 
                 {
 
-                    "role":
-                    "user",
+                    "role": "user",
 
                     "content": [
 
                         {
-
-                            "type":
-                            "text",
-
-                            "text":
-                            "Describe this image."
-
+                            "type": "text",
+                            "text": "Describe this image."
                         },
 
                         {
-
-                            "type":
-                            "image_url",
+                            "type": "image_url",
 
                             "image_url": {
 
                                 "url":
 
-                                f"data:image/jpeg;base64,{image}"
+                                f"data:image/png;base64,{encoded}"
 
                             }
 
@@ -85,6 +59,9 @@ def describe_image(
 
         )
 
-    )
+        return response.content
 
-    return response.content
+
+    except Exception as e:
+
+        return f"Vision Error: {e}"

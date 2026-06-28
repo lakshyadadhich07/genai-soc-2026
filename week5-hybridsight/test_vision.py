@@ -1,10 +1,14 @@
 from tools_vision import describe_image
 
-print(
-    describe_image.invoke(
-        {
-            "image_path":
-            r"C:\Users\camah\Web development\genai-soc-2026\image.png"
-        }
-    )
+
+path = input(
+    "Image path: "
 )
+
+print()
+
+result = describe_image(
+    path
+)
+
+print(result)

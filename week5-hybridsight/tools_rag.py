@@ -1,72 +1,60 @@
-from langchain_community.vectorstores import (
-    Chroma
-)
-
-from langchain_community.embeddings import (
-    HuggingFaceEmbeddings
-)
-
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.tools import tool
 
 
-embedding_model = (
-    HuggingFaceEmbeddings(
-        model_name=
-        "all-MiniLM-L6-v2"
-    )
+embedding_model = HuggingFaceEmbeddings(
+    model_name="all-MiniLM-L6-v2"
 )
 
 
-vectorstore = (
-    Chroma(
-
-        persist_directory=
-        "./chroma_store",
-
-        embedding_function=
-        embedding_model,
-
-        collection_name=
-        "lecture_notes"
-    )
+vectorstore = Chroma(
+    persist_directory="./chroma_store",
+    embedding_function=embedding_model,
+    collection_name="lecture_notes"
 )
 
 
 @tool
-def search_documents(
-    query: str
-):
-
+def search_documents(query: str) -> str:
     """
-    Search uploaded PDFs.
-    Use for notes,
-    lecture questions,
-    uploaded content.
+    Search uploaded PDFs and return relevant document chunks.
     """
 
-    docs = (
-        vectorstore.similarity_search(
-            query,
+    try:
+
+        docs = vectorstore.similarity_search(
+            query=query,
             k=3
         )
-    )
 
-    if not docs:
+        if not docs:
 
-        return (
-            "No document found."
-        )
+            return (
+                "No uploaded documents found.\n"
+                "Please upload a PDF first."
+            )
 
-    return "\n\n".join(
+        output = []
 
-        [
+        for i, doc in enumerate(
+            docs,
+            start=1
+        ):
 
-            doc.page_content
+            page = doc.metadata.get(
+                "page",
+                "unknown"
+            )
 
-            for doc
+            output.append(
+                f"Source {i}\n"
+                f"Page: {page}\n\n"
+                f"{doc.page_content}"
+            )
 
-            in docs
+        return "\n\n".join(output)
 
-        ]
+    except Exception as e:
 
-    )
+        return str(e)
