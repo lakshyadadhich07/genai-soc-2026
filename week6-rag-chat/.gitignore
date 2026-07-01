@@ -1,0 +1,14 @@
+.env
+__pycache__/
+
+vector_db/
+chroma_store/
+
+*.sqlite3
+*.bin
+*.pyc
+
+week6-rag-chat/__pycache__/
+week6-rag-chat/vector_db/
+week6-rag-chat/chroma_store/
+week6-rag-chat/.env
